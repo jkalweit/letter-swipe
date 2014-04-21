@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html ng-app="app">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <title>Letter Swipe</title>
+    <link rel="stylesheet" href="scripts/vendor/bootstrap-yeti.css">
+    <style>
+        .tile {
+            -webkit-transition:0.5s linear all;
+            transition:0.5s linear all;
+
+            float: left;
+            text-align: center;
+            line-height: 3em;
+            font-size: 30px;
+            display: inline-block;
+            border: 1px solid #000000;
+            width: 100px;
+            height: 100px;
+            margin: 0px;
+        }
+
+        .tile.active {
+            background-color: #ffff00;
+        }
+
+        .tile.playable {
+            background-color: lightgreen;
+            -webkit-transition:0.5s linear all;
+            transition:0.5s linear all;
+        }
+
+        .tile.playable.disabled {
+            background: #d3d3d3;
+        }
+
+
+    </style>
+</head>
+
+<body style="padding-top: 80px; padding-bottom: 30px;" ng-controller="MainCtrl">
+
+<div class="navbar navbar-inverse navbar-fixed-top" role="navigation" ng-controller="NavCtrl">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" ng-init="navCollapsed = true" ng-click="navCollapsed = !navCollapsed">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Letter Swipe</a>
+        </div>
+        <div class="collapse navbar-collapse" collapse="navCollapsed">
+            <ul class="nav navbar-nav">
+                <li ng-class="{ active: isActive('/')}"><a href="#">Game</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</div>
+
+<div class="container" ng-controller="GameCtrl">
+
+    <h3>Matches: {{ matches }}</h3>
+    <h2 ng-hide="gameOver">Next Letter: {{ nextLetter }}</h2>
+    <h2 ng-show="gameOver" style="color: #ff0000; font-weight: bold">Game Over!</h2>
+
+    <div class="row">
+        <div class="col-xs-12 col-md-8">
+            <div style="clear: both;">
+                <div class="tile disabled"></div>
+                <div class="tile playable" ng-click="playTileDown(0)" ng-class="{'disabled': !canPlayColumn(0)}"></div>
+                <div class="tile playable" ng-click="playTileDown(1)" ng-class="{'disabled': !canPlayColumn(1)}"></div>
+                <div class="tile playable" ng-click="playTileDown(2)" ng-class="{'disabled': !canPlayColumn(2)}"></div>
+                <div class="tile playable" ng-click="playTileDown(3)" ng-class="{'disabled': !canPlayColumn(3)}"></div>
+                <div class="tile disabled"></div>
+            </div>
+            <div ng-repeat="x in indexes" style="clear: both;" ng-animate="{enter: 'animate-enter', leave: 'animate-leave'}">
+                <div class="tile playable" ng-click="playTileRight(x)" ng-class="{'disabled': !canPlayRow(x)}"></div>
+                <div ng-repeat="y in indexes" class="tile" ng-class="{'active': isTileActive(y, x)}">
+                    &nbsp;{{ grid[x][y] }}&nbsp;
+                </div>
+                <div class="tile playable" ng-click="playTileLeft(x)" ng-class="{'disabled': !canPlayRow(x)}"></div>
+            </div>
+            <div style="clear: both;">
+                <div class="tile disabled"></div>
+                <div class="tile playable" ng-click="playTileUp(0)" ng-class="{'disabled': !canPlayColumn(0)}"></div>
+                <div class="tile playable" ng-click="playTileUp(1)" ng-class="{'disabled': !canPlayColumn(1)}"></div>
+                <div class="tile playable" ng-click="playTileUp(2)" ng-class="{'disabled': !canPlayColumn(2)}"></div>
+                <div class="tile playable" ng-click="playTileUp(3)" ng-class="{'disabled': !canPlayColumn(3)}"></div>
+                <div class="tile disabled"></div>
+            </div>
+        </div>
+
+        <!--<div class="col-xs-12 col-md-4" style="margin-top: 10px;">-->
+            <!--<table>-->
+                <!--<tbody>-->
+                <!--<tr><td></td><td><button ng-click="swipeUp()" class="btn btn-primary" style="width: 100px; height: 100px">Up</button></td></tr>-->
+                <!--<tr><td><button ng-click="swipeLeft()" class="btn btn-primary" style="width: 100px; height: 100px"><-</button></td><td><button ng-click="swipeDown()" class="btn btn-primary" style="width: 100px; height: 100px">Down</button></td><td><button ng-click="swipeRight()" class="btn btn-primary" style="width: 100px; height: 100px">-></button></td></tr>-->
+                <!--</tbody>-->
+            <!--</table>-->
+        <!--</div>-->
+    </div>
+
+</div>
+
+<script src="scripts/vendor/angular.js"></script>
+<script src="scripts/vendor/angular-animate.js"></script>
+<script src="scripts/vendor/ui-bootstrap-tpls-0.9.0.js"></script>
+<script src="scripts/vendor/mousetrap.js"></script>
+<script src="scripts/controllers.js"></script>
+
+<script>
+    var app = angular.module('app', ['ngAnimate', 'ui.bootstrap'], null);
+    app.directive('ngEnter', function () {
+        return function (scope, element, attrs) {
+            element.bind("keydown keypress", function (event) {
+                if(event.which === 13) {
+                    scope.$apply(function (){
+                        scope.$eval(attrs.ngEnter);
+                    });
+
+                    event.preventDefault();
+                }
+            });
+        };
+    });
+    app.filter('toArray', function () {
+        'use strict';
+
+        return function (obj) {
+            if (!(obj instanceof Object)) {
+                return obj;
+            }
+
+            return Object.keys(obj).map(function (key) {
+                return Object.defineProperty(obj[key], '$key', {__proto__: null, value: key});
+            });
+        }
+    });
+    app.filter('checkmark', function() {
+        return function(input) {
+            return input ? '\u2713' : '\u2718';
+        };
+    });
+
+    function GameCtrl($scope) {
+
+
+        $scope.status = 'Ready.';
+
+        $scope.size = 4;
+        $scope.indexes = [0, 1, 2, 3];
+
+        $scope.letters = ['d', 'u', 'k', 'e'];
+
+        $scope.nextLetter = getRandomLetter();
+
+        $scope.grid = [
+            ['d', '', '', ''],
+            ['', 'u', '', ''],
+            ['', '', 'k', ''],
+            ['', '', '', 'e']
+        ];
+
+        $scope.matches = 0;
+
+        $scope.isTileActive = function(x, y) {
+
+            return $scope.grid[y][x] !== '';
+
+        };
+
+        $scope.canPlayRow = function (y) {
+
+            for(var x = 0; x < $scope.size; x++) {
+                if($scope.grid[y][x] === '')
+                    return true;
+            }
+
+            return false;
+        };
+
+        $scope.canPlayColumn = function (x) {
+
+            for(var y = 0; y < $scope.size; y++) {
+                if($scope.grid[y][x] === '')
+                    return true;
+            }
+
+            return false;
+        };
+
+        $scope.swipeLeft = function () {
+
+            $scope.grid.forEach(function (row) {
+                for(var y = 1; y < row.length; y++){
+                    if(row[y-1] === ''){
+                        row[y-1] = row[y];
+                        row[y] = '';
+                    }
+                }
+            });
+
+            assignLetter($scope.size - 1, getRandomInt(0, $scope.size - 1));
+            checkScore();
+        };
+
+        $scope.swipeRight = function () {
+
+            $scope.grid.forEach(function (row) {
+                for(var y = row.length - 2; y >= 0; y--){
+                    if(row[y+1] === ''){
+                        row[y+1] = row[y];
+                        row[y] = '';
+                    }
+                }
+            });
+
+            assignLetter(0, getRandomInt(0, $scope.size - 1));
+            checkScore();
+        };
+
+        $scope.swipeUp = function () {
+            for(var x = 0; x < $scope.size; x++){
+                for(var y = 1; y < $scope.size; y++) {
+                    if($scope.grid[y-1][x] === ''){
+                        $scope.grid[y-1][x] = $scope.grid[y][x];
+                        $scope.grid[y][x] = '';
+                    }
+                }
+            }
+
+            assignLetter(getRandomInt(0, $scope.size - 1), $scope.size - 1);
+            checkScore();
+        };
+
+        $scope.swipeDown = function () {
+            for(var x = 0; x < $scope.size; x++){
+                for(var y = $scope.size-2; y >= 0; y--) {
+                    if($scope.grid[y+1][x] === ''){
+                        $scope.grid[y+1][x] = $scope.grid[y][x];
+                        $scope.grid[y][x] = '';
+                    }
+                }
+            }
+
+            assignLetter(getRandomInt(0, $scope.size - 1), 0);
+            checkScore();
+        };
+
+        $scope.playTileDown = function (x) {
+            if($scope.gameOver)
+                return;
+
+            for(var y = $scope.size - 2; y >= 0; y--)
+            {
+                if($scope.grid[y+1][x] === ''){
+                    $scope.grid[y+1][x] = $scope.grid[y][x];
+                    $scope.grid[y][x] = '';
+                }
+            }
+
+            assignLetter(x, 0);
+            checkScore();
+        };
+
+        $scope.playTileUp = function (x) {
+            if($scope.gameOver)
+                return;
+
+            for(var y = 1; y < $scope.size; y++)
+            {
+                if($scope.grid[y-1][x] === ''){
+                    $scope.grid[y-1][x] = $scope.grid[y][x];
+                    $scope.grid[y][x] = '';
+                }
+            }
+
+            assignLetter(x, $scope.size -1);
+            checkScore();
+        };
+
+        $scope.playTileLeft = function (y) {
+            if($scope.gameOver)
+                return;
+
+            for(var x = 1; x < $scope.size; x++)
+            {
+                if($scope.grid[y][x-1] === ''){
+                    $scope.grid[y][x-1] = $scope.grid[y][x];
+                    $scope.grid[y][x] = '';
+                }
+            }
+
+            assignLetter($scope.size -1, y);
+            checkScore();
+        };
+
+        $scope.playTileRight = function (y) {
+            if($scope.gameOver)
+                return;
+
+            for(var x = $scope.size-2; x >= 0; x--)
+            {
+                if($scope.grid[y][x+1] === ''){
+                    $scope.grid[y][x+1] = $scope.grid[y][x];
+                    $scope.grid[y][x] = '';
+                }
+            }
+
+            assignLetter(0, y);
+            checkScore();
+        };
+
+        function assignLetter(x, y) {
+            $scope.grid[y][x] = $scope.nextLetter;
+            $scope.nextLetter = getRandomLetter();
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function getRandomLetter() {
+            return $scope.letters[getRandomInt(0, $scope.letters.length - 1)];
+        }
+
+        function checkScore() {
+            var grid = $scope.grid;
+            for(var x = 0; x < $scope.size; x++) {
+                if(grid[0][x] === 'd' && grid[1][x] === 'u' && grid[2][x] === 'k' && grid[3][x] === 'e') {
+                    $scope.matches++;
+                    grid[0][x] = grid[1][x] = grid[2][x] = grid[3][x] = '';
+                }
+            }
+
+            for(var y = 0; y < $scope.size; y++) {
+                if(grid[y][0] === 'd' && grid[y][1] === 'u' && grid[y][2] === 'k' && grid[y][3] === 'e') {
+                    $scope.matches++;
+                    grid[y][0] = grid[y][1] = grid[y][2] = grid[y][3] = '';
+                }
+            }
+
+            if($scope.isGameOver())
+                $scope.gameOver = true;
+        };
+
+        $scope.isGameOver = function() {
+            for(var x = 0; x < $scope.size; x++) {
+                for (var y = 0; y < $scope.size; y++) {
+                    if($scope.grid[x][y] === '')
+                        return false;
+                }
+            }
+            return true;
+        };
+
+
+        Mousetrap.bind('left', function() {
+            $scope.$apply(function() {
+                $scope.swipeLeft();
+            });
+        });
+
+        Mousetrap.bind('right', function() {
+            $scope.$apply(function() {
+                $scope.swipeRight();
+            });
+        });
+
+        Mousetrap.bind('up', function() {
+            $scope.$apply(function() {
+                $scope.swipeUp();
+            });
+        });
+
+        Mousetrap.bind('down', function() {
+            $scope.$apply(function() {
+                $scope.swipeDown();
+            });
+        });
+
+
+
+    }
+
+</script>
+
+</body>
+</html>
