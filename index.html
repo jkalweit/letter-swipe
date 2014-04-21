@@ -68,7 +68,7 @@
     <h2 ng-show="gameOver" style="color: #ff0000; font-weight: bold">Game Over!</h2>
 
     <div class="row">
-        <div class="col-xs-12 col-md-8">
+        <div class="col-xs-12 col-md-8" style="min-width: 650px;">
             <div style="clear: both;">
                 <div class="tile disabled"></div>
                 <div class="tile playable" ng-click="playTileDown(0)" ng-class="{'disabled': !canPlayColumn(0)}"></div>
@@ -92,6 +92,12 @@
                 <div class="tile playable" ng-click="playTileUp(3)" ng-class="{'disabled': !canPlayColumn(3)}"></div>
                 <div class="tile disabled"></div>
             </div>
+        </div>
+
+        <div class="col-xs-12 col-md-4">
+            <h1>How to Play</h1>
+            <p>1) Select a green square to play the Next Letter in that row or column.</p>
+            <p>2) Spell 'duke' to get a match and remove those letters.</p>
         </div>
 
         <!--<div class="col-xs-12 col-md-4" style="margin-top: 10px;">-->
@@ -174,6 +180,8 @@
         };
 
         $scope.canPlayRow = function (y) {
+            if($scope.gameOver)
+                return false;
 
             for(var x = 0; x < $scope.size; x++) {
                 if($scope.grid[y][x] === '')
@@ -184,6 +192,8 @@
         };
 
         $scope.canPlayColumn = function (x) {
+            if($scope.gameOver)
+                return false;
 
             for(var y = 0; y < $scope.size; y++) {
                 if($scope.grid[y][x] === '')
@@ -193,66 +203,67 @@
             return false;
         };
 
-        $scope.swipeLeft = function () {
-
-            $scope.grid.forEach(function (row) {
-                for(var y = 1; y < row.length; y++){
-                    if(row[y-1] === ''){
-                        row[y-1] = row[y];
-                        row[y] = '';
-                    }
-                }
-            });
-
-            assignLetter($scope.size - 1, getRandomInt(0, $scope.size - 1));
-            checkScore();
-        };
-
-        $scope.swipeRight = function () {
-
-            $scope.grid.forEach(function (row) {
-                for(var y = row.length - 2; y >= 0; y--){
-                    if(row[y+1] === ''){
-                        row[y+1] = row[y];
-                        row[y] = '';
-                    }
-                }
-            });
-
-            assignLetter(0, getRandomInt(0, $scope.size - 1));
-            checkScore();
-        };
-
-        $scope.swipeUp = function () {
-            for(var x = 0; x < $scope.size; x++){
-                for(var y = 1; y < $scope.size; y++) {
-                    if($scope.grid[y-1][x] === ''){
-                        $scope.grid[y-1][x] = $scope.grid[y][x];
-                        $scope.grid[y][x] = '';
-                    }
-                }
-            }
-
-            assignLetter(getRandomInt(0, $scope.size - 1), $scope.size - 1);
-            checkScore();
-        };
-
-        $scope.swipeDown = function () {
-            for(var x = 0; x < $scope.size; x++){
-                for(var y = $scope.size-2; y >= 0; y--) {
-                    if($scope.grid[y+1][x] === ''){
-                        $scope.grid[y+1][x] = $scope.grid[y][x];
-                        $scope.grid[y][x] = '';
-                    }
-                }
-            }
-
-            assignLetter(getRandomInt(0, $scope.size - 1), 0);
-            checkScore();
-        };
+//        $scope.swipeLeft = function () {
+//
+//            $scope.grid.forEach(function (row) {
+//                for(var y = 1; y < row.length; y++){
+//                    if(row[y-1] === ''){
+//                        row[y-1] = row[y];
+//                        row[y] = '';
+//                    }
+//                }
+//            });
+//
+//            assignLetter($scope.size - 1, getRandomInt(0, $scope.size - 1));
+//            checkScore();
+//        };
+//
+//        $scope.swipeRight = function () {
+//
+//            $scope.grid.forEach(function (row) {
+//                for(var y = row.length - 2; y >= 0; y--){
+//                    if(row[y+1] === ''){
+//                        row[y+1] = row[y];
+//                        row[y] = '';
+//                    }
+//                }
+//            });
+//
+//            assignLetter(0, getRandomInt(0, $scope.size - 1));
+//            checkScore();
+//        };
+//
+//        $scope.swipeUp = function () {
+//            for(var x = 0; x < $scope.size; x++){
+//                for(var y = 1; y < $scope.size; y++) {
+//                    if($scope.grid[y-1][x] === ''){
+//                        $scope.grid[y-1][x] = $scope.grid[y][x];
+//                        $scope.grid[y][x] = '';
+//                    }
+//                }
+//            }
+//
+//            assignLetter(getRandomInt(0, $scope.size - 1), $scope.size - 1);
+//            checkScore();
+//        };
+//
+//        $scope.swipeDown = function () {
+//            for(var x = 0; x < $scope.size; x++){
+//                for(var y = $scope.size-2; y >= 0; y--) {
+//                    if($scope.grid[y+1][x] === ''){
+//                        $scope.grid[y+1][x] = $scope.grid[y][x];
+//                        $scope.grid[y][x] = '';
+//                    }
+//                }
+//            }
+//
+//            assignLetter(getRandomInt(0, $scope.size - 1), 0);
+//            checkScore();
+//        };
 
         $scope.playTileDown = function (x) {
-            if($scope.gameOver)
+
+            if(!$scope.canPlayColumn(x))
                 return;
 
             for(var y = $scope.size - 2; y >= 0; y--)
@@ -268,7 +279,7 @@
         };
 
         $scope.playTileUp = function (x) {
-            if($scope.gameOver)
+            if(!$scope.canPlayColumn(x))
                 return;
 
             for(var y = 1; y < $scope.size; y++)
@@ -284,7 +295,7 @@
         };
 
         $scope.playTileLeft = function (y) {
-            if($scope.gameOver)
+            if(!$scope.canPlayRow(y))
                 return;
 
             for(var x = 1; x < $scope.size; x++)
@@ -300,7 +311,7 @@
         };
 
         $scope.playTileRight = function (y) {
-            if($scope.gameOver)
+            if(!$scope.canPlayRow(y))
                 return;
 
             for(var x = $scope.size-2; x >= 0; x--)
