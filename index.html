@@ -20,24 +20,47 @@
             width: 100px;
             height: 100px;
             margin: 0px;
+            background-color: lightsteelblue;
         }
 
         .tile.active {
             -webkit-transition:0.0s linear all;
             transition:0.0s linear all;
-            background-color: #ffff00;
+            background-color: #0000ff;
+            color: white;
         }
 
         .tile.playable {
-            background-color: lightgreen;
-            -webkit-transition:0.5s linear all;
-            transition:0.5s linear all;
+            background-color: white;
         }
 
         .tile.playable.disabled {
-            background: #d3d3d3;
+            background-color: #d3d3d3;
         }
 
+
+        @keyframes highlight {
+            0% {
+                background-color: red
+            }
+            100% {
+                background-color: white;
+            }
+        }
+
+        @-webkit-keyframes highlight {
+            0% {
+                background: #0000ff;
+            }
+            100% {
+                background: none;
+            }
+        }
+
+        .tile.playable.ng-click-active {
+            animation: highlight;
+            -webkit-animation: highlight 0.1s;
+        }
 
     </style>
 </head>
@@ -72,12 +95,12 @@
     <div class="row">
         <div class="col-xs-12 col-md-8" style="min-width: 650px;">
             <div style="clear: both;">
-                <div class="tile disabled"></div>
+                <div class="tile" style="border: none; background: none;"></div>
                 <div class="tile playable" ng-click="playTileDown(0)" ng-class="{'disabled': !canPlayColumn(0)}"></div>
                 <div class="tile playable" ng-click="playTileDown(1)" ng-class="{'disabled': !canPlayColumn(1)}"></div>
                 <div class="tile playable" ng-click="playTileDown(2)" ng-class="{'disabled': !canPlayColumn(2)}"></div>
                 <div class="tile playable" ng-click="playTileDown(3)" ng-class="{'disabled': !canPlayColumn(3)}"></div>
-                <div class="tile disabled"></div>
+                <div class="tile" style="border: none; background: none;"></div>
             </div>
             <div ng-repeat="x in indexes" style="clear: both;" ng-animate="{enter: 'animate-enter', leave: 'animate-leave'}">
                 <div class="tile playable" ng-click="playTileRight(x)" ng-class="{'disabled': !canPlayRow(x)}"></div>
@@ -87,19 +110,19 @@
                 <div class="tile playable" ng-click="playTileLeft(x)" ng-class="{'disabled': !canPlayRow(x)}"></div>
             </div>
             <div style="clear: both;">
-                <div class="tile disabled"></div>
+                <div class="tile" style="border: none; background: none;"></div>
                 <div class="tile playable" ng-click="playTileUp(0)" ng-class="{'disabled': !canPlayColumn(0)}"></div>
                 <div class="tile playable" ng-click="playTileUp(1)" ng-class="{'disabled': !canPlayColumn(1)}"></div>
                 <div class="tile playable" ng-click="playTileUp(2)" ng-class="{'disabled': !canPlayColumn(2)}"></div>
                 <div class="tile playable" ng-click="playTileUp(3)" ng-class="{'disabled': !canPlayColumn(3)}"></div>
-                <div class="tile disabled"></div>
+                <div class="tile" style="border: none; background: none;"></div>
             </div>
         </div>
 
         <div class="col-xs-12 col-md-4">
             <h1>How to Play</h1>
-            <p>1) Select a green square to play the Next Letter in that row or column.</p>
-            <p>2) Spell 'duke' to get a match and remove those letters.</p>
+            <p>1) Select a white square to play the Next Letter in that row or column.</p>
+            <p>2) Spell 'DUKE' to get a match and remove those letters.</p>
         </div>
 
         <!--<div class="col-xs-12 col-md-4" style="margin-top: 10px;">-->
@@ -163,15 +186,15 @@
         $scope.size = 4;
         $scope.indexes = [0, 1, 2, 3];
 
-        $scope.letters = ['d', 'u', 'k', 'e'];
+        $scope.letters = ['D', 'U', 'K', 'E'];
 
         $scope.nextLetter = getRandomLetter();
 
         $scope.grid = [
-            ['d', '', '', ''],
-            ['', 'u', '', ''],
-            ['', '', 'k', ''],
-            ['', '', '', 'e']
+            ['D', '', '', ''],
+            ['', 'U', '', ''],
+            ['', '', 'K', ''],
+            ['', '', '', 'E']
         ];
 
         $scope.matches = 0;
@@ -340,10 +363,10 @@
 
         function getRandomLetter() {
             if($scope.letterHistory == null)
-                $scope.letterHistory = ['d', 'u', 'k', 'e', 'd', 'u', 'k', 'e'];
+                $scope.letterHistory = ['D', 'U', 'K', 'E', 'D', 'U', 'K', 'E'];
 
             // Make sure every letter exists in letter history (prevent letter desert).
-            var counts = { 'd': 0, 'u': 0, 'k': 0, 'e': 0 };
+            var counts = { 'D': 0, 'U': 0, 'K': 0, 'E': 0 };
             var nextLetter = null;
             $scope.letterHistory.forEach(function (letter) { counts[letter]++; })
             for(var letter in counts) {
@@ -365,14 +388,14 @@
         function checkScore() {
             var grid = $scope.grid;
             for(var x = 0; x < $scope.size; x++) {
-                if(grid[0][x] === 'd' && grid[1][x] === 'u' && grid[2][x] === 'k' && grid[3][x] === 'e') {
+                if(grid[0][x] === 'D' && grid[1][x] === 'U' && grid[2][x] === 'K' && grid[3][x] === 'E') {
                     $scope.matches++;
                     grid[0][x] = grid[1][x] = grid[2][x] = grid[3][x] = '';
                 }
             }
 
             for(var y = 0; y < $scope.size; y++) {
-                if(grid[y][0] === 'd' && grid[y][1] === 'u' && grid[y][2] === 'k' && grid[y][3] === 'e') {
+                if(grid[y][0] === 'D' && grid[y][1] === 'U' && grid[y][2] === 'K' && grid[y][3] === 'E') {
                     $scope.matches++;
                     grid[y][0] = grid[y][1] = grid[y][2] = grid[y][3] = '';
                 }
