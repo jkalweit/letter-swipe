@@ -115,13 +115,14 @@
 </div>
 
 <script src="scripts/vendor/angular.js"></script>
+<script src="scripts/vendor/angular-touch.js"></script>
 <script src="scripts/vendor/angular-animate.js"></script>
 <script src="scripts/vendor/ui-bootstrap-tpls-0.9.0.js"></script>
 <script src="scripts/vendor/mousetrap.js"></script>
 <script src="scripts/controllers.js"></script>
 
 <script>
-    var app = angular.module('app', ['ngAnimate', 'ui.bootstrap'], null);
+    var app = angular.module('app', ['ngTouch', 'ngAnimate', 'ui.bootstrap'], null);
     app.directive('ngEnter', function () {
         return function (scope, element, attrs) {
             element.bind("keydown keypress", function (event) {
