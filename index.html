@@ -336,7 +336,27 @@
         }
 
         function getRandomLetter() {
-            return $scope.letters[getRandomInt(0, $scope.letters.length - 1)];
+            if($scope.letterHistory == null)
+                $scope.letterHistory = ['d', 'u', 'k', 'e', 'd', 'u', 'k', 'e'];
+
+            // Make sure every letter exists in letter history (prevent letter desert).
+            var counts = { 'd': 0, 'u': 0, 'k': 0, 'e': 0 };
+            var nextLetter = null;
+            $scope.letterHistory.forEach(function (letter) { counts[letter]++; })
+            for(var letter in counts) {
+                if(counts[letter] === 0)
+                    nextLetter = letter;
+            }
+
+            if(!nextLetter)
+                nextLetter = $scope.letters[getRandomInt(0, $scope.letters.length - 1)];
+
+            if(counts[nextLetter] >= 4)
+                return getRandomLetter();
+
+            $scope.letterHistory.shift();
+            $scope.letterHistory.push(nextLetter);
+            return nextLetter;
         }
 
         function checkScore() {
