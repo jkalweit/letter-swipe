@@ -88,7 +88,10 @@
 
 <div class="container" ng-controller="GameCtrl">
 
-
+    <div class="hidden-md hidden-lg">
+        <h2 ng-hide="gameOver" style="color: #0000ff; font-weight: bold;">Next Letter: {{ nextLetter }}</h2>
+        <h1 ng-show="gameOver" style="color: #ff0000; font-weight: bold">Game Over!</h1>
+    </div>
 
     <div class="row">
         <div class="col-xs-12 col-md-8" style="width: 630px; padding-top: 30px;">
@@ -119,18 +122,28 @@
 
         <div class="col-xs-12 col-md-4">
             <div class="col-xs-12">
-                <h1 ng-hide="gameOver">Next Letter: {{ nextLetter }}</h1>
-                <hr/>
-                <h1 ng-show="gameOver" style="color: #ff0000; font-weight: bold">Game Over!</h1>
-                <h3>Matches: {{ matches }}</h3>
-                <h5>Doubles: {{ clears }}</h5>
-                <h5>Clears: {{ clears }}</h5>
-                <hr/>
-                <h4>Last {{ maxLetterHistory }} letters:</h4>
-                <span ng-repeat="letter in letterHistory track by $index">{{ letter }} </span>
-                <hr/>
-                <h4>Letter Count:</h4>
-                <p ng-repeat="(letter, count) in letterCount track by $index">{{ letter }}: {{ count }} </p>
+                <div class="hidden-xs hidden-sm">
+                    <h1 ng-hide="gameOver" style="color: #0000ff; font-weight: bold;">Next Letter: {{ nextLetter }}</h1>
+                    <h1 ng-show="gameOver" style="color: #ff0000; font-weight: bold">Game Over!</h1>
+                </div>
+                <div class="col-xs-12" style="padding: 0px; margin-top: 20px;">
+                    <div style="width: 45%; float: left;">
+                        <h4><b>Matches: {{ matches }}</b></h4>
+                        <h5><b>Doubles: {{ clears }}</b></h5>
+                        <h5><b>Clears: {{ clears }}</b></h5>
+                        <hr/>
+                        <h4>Last {{ maxLetterHistory }} letters:</h4>
+                        <span ng-repeat="letter in letterHistory track by $index">{{ letter }} </span>
+                    </div>
+                    <div style="width: 45%; float: left; padding: 10px; border-left: 1px solid #d3d3d3; margin-left: 10px;">
+                        <h4>Letter Counts:</h4>
+                        <p ng-repeat="(letter, count) in letterCount track by $index">{{ letter }}: {{ count }} </p>
+                    </div>
+                </div>
+
+
+
+
             </div>
             <div class="col-xs-12">
                 <hr/>
@@ -400,6 +413,7 @@
                         isCleared = false;
                 }
             }
+
 
             if(isCleared)
                 $scope.clears++;
