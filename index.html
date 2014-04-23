@@ -88,12 +88,10 @@
 
 <div class="container" ng-controller="GameCtrl">
 
-    <h3>Matches: {{ matches }}</h3>
-    <h2 ng-hide="gameOver">Next Letter: {{ nextLetter }}</h2>
-    <h2 ng-show="gameOver" style="color: #ff0000; font-weight: bold">Game Over!</h2>
+
 
     <div class="row">
-        <div class="col-xs-12 col-md-8" style="min-width: 650px;">
+        <div class="col-xs-12 col-md-8" style="width: 630px; padding-top: 30px;">
             <div style="clear: both;">
                 <div class="tile" style="border: none; background: none;"></div>
                 <div class="tile playable" ng-click="playTileDown(0)" ng-class="{'disabled': !canPlayColumn(0)}"></div>
@@ -120,19 +118,27 @@
         </div>
 
         <div class="col-xs-12 col-md-4">
-            <h1>How to Play</h1>
-            <p>1) Select a green square to play the Next Letter in that row or column.</p>
-            <p>2) Spell 'DUKE' to get a match and remove those letters.</p>
+            <div class="col-xs-12">
+                <h1 ng-hide="gameOver">Next Letter: {{ nextLetter }}</h1>
+                <hr/>
+                <h1 ng-show="gameOver" style="color: #ff0000; font-weight: bold">Game Over!</h1>
+                <h3>Matches: {{ matches }}</h3>
+                <h5>Doubles: {{ clears }}</h5>
+                <h5>Clears: {{ clears }}</h5>
+                <hr/>
+                <h4>Last {{ maxLetterHistory }} letters:</h4>
+                <span ng-repeat="letter in letterHistory track by $index">{{ letter }} </span>
+                <hr/>
+                <h4>Letter Count:</h4>
+                <p ng-repeat="(letter, count) in letterCount track by $index">{{ letter }}: {{ count }} </p>
+            </div>
+            <div class="col-xs-12">
+                <hr/>
+                <h1>How to Play</h1>
+                <p>1) Select a green square to play the Next Letter in that row or column.</p>
+                <p>2) Spell "<span ng-repeat="letter in letters track by $index">{{letter}}</span>"  to get a match and remove those letters.</p>
+            </div>
         </div>
-
-        <!--<div class="col-xs-12 col-md-4" style="margin-top: 10px;">-->
-            <!--<table>-->
-                <!--<tbody>-->
-                <!--<tr><td></td><td><button ng-click="swipeUp()" class="btn btn-primary" style="width: 100px; height: 100px">Up</button></td></tr>-->
-                <!--<tr><td><button ng-click="swipeLeft()" class="btn btn-primary" style="width: 100px; height: 100px"><-</button></td><td><button ng-click="swipeDown()" class="btn btn-primary" style="width: 100px; height: 100px">Down</button></td><td><button ng-click="swipeRight()" class="btn btn-primary" style="width: 100px; height: 100px">-></button></td></tr>-->
-                <!--</tbody>-->
-            <!--</table>-->
-        <!--</div>-->
     </div>
 
 </div>
@@ -183,21 +189,41 @@
 
         $scope.status = 'Ready.';
 
-        $scope.size = 4;
-        $scope.indexes = [0, 1, 2, 3];
-
         $scope.letters = ['D', 'U', 'K', 'E'];
+        $scope.size = $scope.letters.length;
 
-        $scope.nextLetter = getRandomLetter();
+        // indexes for ng-repeat in view.
+        $scope.indexes =[];
+        for(var i = 0; i < $scope.size; i++)
+            $scope.indexes.push(i);
 
         $scope.grid = [
-            ['D', '', '', ''],
-            ['', 'U', '', ''],
-            ['', '', 'K', ''],
-            ['', '', '', 'E']
+            [$scope.letters[0], '', '', ''],
+            ['', $scope.letters[1], '', ''],
+            ['', '', $scope.letters[2], ''],
+            ['', '', '', $scope.letters[3]]
         ];
 
+
+        $scope.letterCount = {};
+        $scope.letters.forEach(function (letter) {
+            $scope.letterCount[letter] = 0;
+        });
+
+        $scope.maxLetterHistory = 12;
+        $scope.letterHistory = [];
+        $scope.letters.forEach(function (letter) {
+            $scope.letterHistory.push(letter);
+            $scope.letterCount[letter]++;
+        });
+
+
+
+        $scope.nextLetter = getRandomLetter();
         $scope.matches = 0;
+        $scope.doubles = 0;
+        $scope.clears = 0;
+
 
         $scope.isTileActive = function(x, y) {
 
@@ -228,64 +254,6 @@
 
             return false;
         };
-
-//        $scope.swipeLeft = function () {
-//
-//            $scope.grid.forEach(function (row) {
-//                for(var y = 1; y < row.length; y++){
-//                    if(row[y-1] === ''){
-//                        row[y-1] = row[y];
-//                        row[y] = '';
-//                    }
-//                }
-//            });
-//
-//            assignLetter($scope.size - 1, getRandomInt(0, $scope.size - 1));
-//            checkScore();
-//        };
-//
-//        $scope.swipeRight = function () {
-//
-//            $scope.grid.forEach(function (row) {
-//                for(var y = row.length - 2; y >= 0; y--){
-//                    if(row[y+1] === ''){
-//                        row[y+1] = row[y];
-//                        row[y] = '';
-//                    }
-//                }
-//            });
-//
-//            assignLetter(0, getRandomInt(0, $scope.size - 1));
-//            checkScore();
-//        };
-//
-//        $scope.swipeUp = function () {
-//            for(var x = 0; x < $scope.size; x++){
-//                for(var y = 1; y < $scope.size; y++) {
-//                    if($scope.grid[y-1][x] === ''){
-//                        $scope.grid[y-1][x] = $scope.grid[y][x];
-//                        $scope.grid[y][x] = '';
-//                    }
-//                }
-//            }
-//
-//            assignLetter(getRandomInt(0, $scope.size - 1), $scope.size - 1);
-//            checkScore();
-//        };
-//
-//        $scope.swipeDown = function () {
-//            for(var x = 0; x < $scope.size; x++){
-//                for(var y = $scope.size-2; y >= 0; y--) {
-//                    if($scope.grid[y+1][x] === ''){
-//                        $scope.grid[y+1][x] = $scope.grid[y][x];
-//                        $scope.grid[y][x] = '';
-//                    }
-//                }
-//            }
-//
-//            assignLetter(getRandomInt(0, $scope.size - 1), 0);
-//            checkScore();
-//        };
 
         $scope.playTileDown = function (x) {
 
@@ -354,6 +322,13 @@
 
         function assignLetter(x, y) {
             $scope.grid[y][x] = $scope.nextLetter;
+
+            $scope.letterHistory.push($scope.nextLetter);
+            if($scope.letterHistory.length > $scope.maxLetterHistory)
+                $scope.letterHistory.shift();
+
+            $scope.letterCount[$scope.nextLetter]++;
+
             $scope.nextLetter = getRandomLetter();
         }
 
@@ -362,11 +337,16 @@
         }
 
         function getRandomLetter() {
-            if($scope.letterHistory == null)
-                $scope.letterHistory = ['D', 'U', 'K', 'E', 'D', 'U', 'K', 'E'];
+
+
 
             // Make sure every letter exists in letter history (prevent letter desert).
-            var counts = { 'D': 0, 'U': 0, 'K': 0, 'E': 0 };
+            var counts = {};
+            counts[$scope.letters[0]] = 0;
+            counts[$scope.letters[1]] = 0;
+            counts[$scope.letters[2]] = 0;
+            counts[$scope.letters[3]] = 0;
+
             var nextLetter = null;
             $scope.letterHistory.forEach(function (letter) { counts[letter]++; })
             for(var letter in counts) {
@@ -377,29 +357,55 @@
             if(!nextLetter)
                 nextLetter = $scope.letters[getRandomInt(0, $scope.letters.length - 1)];
 
-            if(counts[nextLetter] >= 4)
+            if(counts[nextLetter] > 3)
                 return getRandomLetter();
 
-            $scope.letterHistory.shift();
-            $scope.letterHistory.push(nextLetter);
+
             return nextLetter;
         }
 
         function checkScore() {
             var grid = $scope.grid;
+            var matchedRows = [];
+            var matchedColumns = [];
+
             for(var x = 0; x < $scope.size; x++) {
-                if(grid[0][x] === 'D' && grid[1][x] === 'U' && grid[2][x] === 'K' && grid[3][x] === 'E') {
+                if(grid[0][x] === $scope.letters[0] && grid[1][x] === $scope.letters[1] && grid[2][x] === $scope.letters[2] && grid[3][x] === $scope.letters[3]) {
                     $scope.matches++;
-                    grid[0][x] = grid[1][x] = grid[2][x] = grid[3][x] = '';
+                    matchedColumns.push(x);
                 }
             }
 
             for(var y = 0; y < $scope.size; y++) {
-                if(grid[y][0] === 'D' && grid[y][1] === 'U' && grid[y][2] === 'K' && grid[y][3] === 'E') {
+                if(grid[y][0] === $scope.letters[0] && grid[y][1] === $scope.letters[1] && grid[y][2] === $scope.letters[2] && grid[y][3] === $scope.letters[3]) {
                     $scope.matches++;
-                    grid[y][0] = grid[y][1] = grid[y][2] = grid[y][3] = '';
+                    matchedRows.push(y);
                 }
             }
+
+            // Clear matched columns and rows.
+            matchedColumns.forEach(function (x) {
+                grid[0][x] = grid[1][x] = grid[2][x] = grid[3][x] = '';
+            });
+            matchedRows.forEach(function (y) {
+                grid[y][0] = grid[y][1] = grid[y][2] = grid[y][3] = '';
+            });
+
+
+            var isCleared = true;
+            // check for cleared board
+            for(var x = 0; x < $scope.size; x++) {
+                for(var y = 0; y < $scope.size; y++) {
+                    if(grid[y][x] !== '')
+                        isCleared = false;
+                }
+            }
+
+            if(isCleared)
+                $scope.clears++;
+
+            if(matchedColumns.length + matchedRows.length > 1)
+                $scope.doubles++;
 
             if($scope.isGameOver())
                 $scope.gameOver = true;
