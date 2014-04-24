@@ -89,7 +89,7 @@
 <div class="container" ng-controller="GameCtrl">
 
     <div class="hidden-md hidden-lg">
-        <h2 ng-hide="gameOver" style="color: #0000ff; font-weight: bold;">Next Letter: {{ nextLetter }}</h2>
+        <h2 ng-hide="gameOver" style="color: #0000ff; font-weight: bold;">Next Tile: {{ nextLetter }}</h2>
         <h1 ng-show="gameOver" style="color: #ff0000; font-weight: bold">Game Over!</h1>
     </div>
 
@@ -123,20 +123,20 @@
         <div class="col-xs-12 col-md-4">
             <div class="col-xs-12">
                 <div class="hidden-xs hidden-sm">
-                    <h1 ng-hide="gameOver" style="color: #0000ff; font-weight: bold;">Next Letter: {{ nextLetter }}</h1>
+                    <h1 ng-hide="gameOver" style="color: #0000ff; font-weight: bold;">Next Tile: {{ nextLetter }}</h1>
                     <h1 ng-show="gameOver" style="color: #ff0000; font-weight: bold">Game Over!</h1>
                 </div>
                 <div class="col-xs-12" style="padding: 0px; margin-top: 20px;">
                     <div style="width: 45%; float: left;">
                         <h4><b>Matches: {{ matches }}</b></h4>
-                        <h5><b>Doubles: {{ clears }}</b></h5>
+                        <h5><b>Doubles: {{ doubles }}</b></h5>
                         <h5><b>Clears: {{ clears }}</b></h5>
                         <hr/>
-                        <h4>Last {{ maxLetterHistory }} letters:</h4>
+                        <h4>Last {{ maxLetterHistory }} Tiles:</h4>
                         <span ng-repeat="letter in letterHistory track by $index">{{ letter }} </span>
                     </div>
                     <div style="width: 45%; float: left; padding: 10px; border-left: 1px solid #d3d3d3; margin-left: 10px;">
-                        <h4>Letter Counts:</h4>
+                        <h4>Tile Counts:</h4>
                         <p ng-repeat="(letter, count) in letterCount track by $index">{{ letter }}: {{ count }} </p>
                     </div>
                 </div>
@@ -148,8 +148,8 @@
             <div class="col-xs-12">
                 <hr/>
                 <h1>How to Play</h1>
-                <p>1) Select a green square to play the Next Letter in that row or column.</p>
-                <p>2) Spell "<span ng-repeat="letter in letters track by $index">{{letter}}</span>"  to get a match and remove those letters.</p>
+                <p>1) Select a green square to play the Next Tile in that row or column.</p>
+                <p>2) Make "<span ng-repeat="letter in letters track by $index">{{letter}}</span>"  to get a match and remove those tiles.</p>
             </div>
         </div>
     </div>
@@ -367,10 +367,23 @@
                     nextLetter = letter;
             }
 
+            var maxLetter = $scope.letters[getRandomInt(0, $scope.letters.length - 1)];
+            var minLetter = $scope.letters[getRandomInt(0, $scope.letters.length - 1)];
+            for(var letter in $scope.letterCount) {
+                if($scope.letterCount[letter] > $scope.letterCount[maxLetter])
+                    maxLetter = letter;
+                else if($scope.letterCount[letter] < $scope.letterCount[minLetter])
+                    minLetter = letter;
+            }
+
+            // Prevent letter desert.
+            if($scope.letterCount[maxLetter] - $scope.letterCount[minLetter] > 4)
+                nextLetter = minLetter;
+
             if(!nextLetter)
                 nextLetter = $scope.letters[getRandomInt(0, $scope.letters.length - 1)];
 
-            if(counts[nextLetter] > 3)
+            if(counts[nextLetter] > ($scope.maxLetterHistory / Object.keys($scope.letterCount).length)) // prevent letter desert
                 return getRandomLetter();
 
 
