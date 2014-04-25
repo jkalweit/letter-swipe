@@ -127,17 +127,30 @@
                     <h1 ng-show="gameOver" style="color: #ff0000; font-weight: bold">Game Over!</h1>
                 </div>
                 <div class="col-xs-12" style="padding: 0px; margin-top: 20px;">
-                    <div style="width: 45%; float: left;">
-                        <h4><b>Matches: {{ matches }}</b></h4>
-                        <h5><b>Doubles: {{ doubles }}</b></h5>
-                        <h5><b>Clears: {{ clears }}</b></h5>
+                    <div style="width: 65%; float: left;">
+                        <table style="width: 100%">
+                            <tbody>
+                            <tr>
+                                <td>Matches:</td><td>{{ matches }}</td><td>x 100</td><td style="text-align: right"><b>{{ matches * 100  | number}}</b></td>
+                            </tr>
+                            <tr>
+                                <td>Doubles:</td><td>{{ doubles }}</td><td>x 500</td><td style="text-align: right"><b>{{ doubles * 500  | number}}</b></td>
+                            </tr>
+                            <tr>
+                                <td>Clears:</td><td>{{ clears }}</td><td>x 1,000</td><td style="text-align: right"><b>{{ clears * 1000  | number}}</b></td>
+                            </tr>
+                            <tr style="font-size: 15px; font-weight: bold;">
+                                <td>Total:</td><td></td><td></td><td style="text-align: right"><b>{{ (matches * 100) + (doubles * 500) + (clears * 1000) | number }}</b></td>
+                            </tr>
+                            </tbody>
+                        </table>
                         <hr/>
                         <h4>Last {{ maxLetterHistory }} Tiles:</h4>
                         <span ng-repeat="letter in letterHistory track by $index">{{ letter }} </span>
                     </div>
-                    <div style="width: 45%; float: left; padding: 10px; border-left: 1px solid #d3d3d3; margin-left: 10px;">
-                        <h4>Tile Counts:</h4>
-                        <p ng-repeat="(letter, count) in letterCount track by $index">{{ letter }}: {{ count }} </p>
+                    <div style="width: 30%; float: left; padding: 10px; border-left: 1px solid #d3d3d3; margin-left: 10px;">
+                        <h4>Counts:</h4>
+                        <p ng-repeat="(letter, count) in letterCount track by $index">"{{ letter }}" = {{ count }} </p>
                     </div>
                 </div>
 
@@ -157,6 +170,7 @@
 </div>
 
 <script src="scripts/vendor/angular.js"></script>
+<script src="scripts/vendor/angular-route.js"></script>
 <script src="scripts/vendor/angular-touch.js"></script>
 <script src="scripts/vendor/angular-animate.js"></script>
 <script src="scripts/vendor/ui-bootstrap-tpls-0.9.0.js"></script>
@@ -164,7 +178,7 @@
 <script src="scripts/controllers.js"></script>
 
 <script>
-    var app = angular.module('app', ['ngTouch', 'ngAnimate', 'ui.bootstrap'], null);
+    var app = angular.module('app', ['ngRoute', 'ngTouch', 'ngAnimate', 'ui.bootstrap'], null);
     app.directive('ngEnter', function () {
         return function (scope, element, attrs) {
             element.bind("keydown keypress", function (event) {
@@ -197,12 +211,19 @@
         };
     });
 
-    function GameCtrl($scope) {
+    function GameCtrl($scope, $location) {
 
 
         $scope.status = 'Ready.';
 
-        $scope.letters = ['D', 'U', 'K', 'E'];
+        var tiles = $location.search().tiles;
+
+        if(tiles && tiles.length >=4) {
+            $scope.letters = [tiles[0], tiles[1], tiles[2], tiles[3]];
+        } else {
+            $scope.letters = ['D', 'U', 'K', 'E'];
+        }
+
         $scope.size = $scope.letters.length;
 
         // indexes for ng-repeat in view.
